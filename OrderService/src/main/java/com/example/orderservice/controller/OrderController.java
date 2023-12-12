@@ -1,0 +1,36 @@
+package com.example.orderservice.controller;
+
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Slf4j
+@RestController
+public class OrderController {
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    @GetMapping("/order")
+    public String order(@RequestParam String userId,
+                        @RequestParam String productId,
+                        @RequestParam String price) {
+
+        Map<String, String> fieldMap = new HashMap<>();
+        fieldMap.put("userId", userId);
+        fieldMap.put("productId", productId);
+        fieldMap.put("price", price);
+
+        redisTemplate.opsForStream().add("order-events", fieldMap);
+
+        log.info("Order created.");
+
+        return "ok";
+    }
+}
